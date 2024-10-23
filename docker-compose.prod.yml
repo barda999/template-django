@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:15.3-bullseye
+    environment:
+      POSTGRES_USER: $DB_USER
+      POSTGRES_PASSWORD: $DB_PASSWORD
+      POSTGRES_DB: $DB_NAME
+    volumes:
+      - postgresdata:/var/lib/postgresql/data
+  app:
+    build:
+      dockerfile: Dockerfile.prod
+    ports:
+      - "$APP_PORT:$APP_PORT"
+    env_file:
+      - .env
+
+volumes:
+  postgresdata:

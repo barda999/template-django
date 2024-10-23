@@ -1,0 +1,57 @@
+#!/bin/bash
+
+set -e
+
+# Check if an argument is provided
+if [ $# -eq 0 ]; then
+    echo "Usage: $0 <argument>"
+    echo "Arguments: "
+    echo "- up (roll up the docker compose project for development)"
+    echo "- down (shuts down the docker compose project)"
+    echo "- makemigrations (make migration files)"
+    echo "- migrate (apply migrations)"
+    echo "- createsuperuser (create super user for django admin)"
+    echo "- startfresh (clean up compose project and database and recreate the project from scratch)"
+    exit 1
+fi
+
+# Store the argument
+input=$1
+
+# Run different commands based on the input
+case $input in
+    "up")
+        docker compose up --build -d
+        docker compose logs -f
+        ;;
+    "down")
+        docker compose down
+        ;;
+    "shell")
+        docker compose exec -it app python manage.py shell
+        ;;
+    "makemigrations")
+        docker compose exec app python manage.py makemigrations
+        sudo chown -R $USER:$USER qusic
+        ;;
+    "migrate")
+        docker compose exec app python manage.py migrate
+        ;;
+    "makeandmigrate")
+        docker compose exec app python manage.py makemigrations
+        sudo chown -R $USER:$USER qusic
+        docker compose exec app python manage.py migrate
+        ;;
+    "createsuperuser")
+        docker compose exec app python manage.py createsuperuser
+        ;;
+    "startfresh")
+        docker compose down --volumes
+        docker compose up --build -d
+        docker compose logs -f
+        ;;
+    *)
+        echo "Invalid argument: $input"
+        exit 1
+        ;;
+esac
